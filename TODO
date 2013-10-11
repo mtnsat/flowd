@@ -1,0 +1,84 @@
+* indicates things to do before 1.0 release
+
+- Inetd mode (listen on stdin)
+ - Exit value should indicate whether packet(s) were successfully parsed
+ - Very useful for regress tests
+ - or, listen on /unix/domain/path
+   - would need to to send netflow packets
+     - Capture from pcap
+     - Send from log (see below)
+   
+- Regress tests							*
+ - Config
+ - Packet parsing
+ - Flow storage
+ - Output
+ - Filtering
+
+- Improve Filters 
+ - Port predicates, e.g. "port 1024-65536", "port > 1024"
+ - packets, octets (need predicates)
+ - other fields, in particular netflow version
+ - time of day filtering on flow_start|flow_finish
+ - clarify what happens when fields are missing
+ - allow specification of filter parameters in any order
+
+- Improve log handling
+ - E.g. multiple log files, based on tag?
+ - support relaying of pre/post-filter packets to another agent
+   - UDP
+ - Vanilla text logging
+ - XML logging
+ - build binary flows from XML (useful for regress tests)
+
+- Improve Perl and Python documentation				*
+- Add Perl and Python regress tests				*
+- Add writing of binary flows to perl module			*
+
+- Option to check TTL of inbound flow export packets
+- Option to bind by interface name 
+- IPv4 Multicast group join by interface. e.g. 
+	join group 224.22.33.44 on fxp0
+
+- Tools collection:
+  - "flow-send", a small program to take on-disk flows and send them as 
+    NetFlow packets to a chosen host
+  - (or, patch flow-tools)
+
+- More protocols: sflow, IPFIX
+
+- Add calculation and storage of "normalised" flow timers, correcting for 
+  flow probe clock errors by using difference between header->time_sec and 
+  localtime (assumes flow collector clock is accurate!)
+
+- Track sequence per peer and alert on flow drops
+
+- Define net store.h types for:
+  - min/max_pkt_lngth
+
+- Discard protocol-specific state when we receive a packet in a different
+  protocol
+
+- Don't record any nf9 flows unless the entire packet is valid (right now,
+  we only validate to the flowset level)
+  - Could at least iterate over packet and check for truncation?
+
+- Renovate Perl API.
+ - This was my first attempt at writing C/Perl glue, so the interface is
+   pretty clumsy :(
+
+- Add support for legacy store logs to perl/python APIs
+
+- Allow startup of flowd with detached logsock (maybe return a /dev/null fd
+  from the monitor - it will error on send)
+
+- Implement CryptoPAN address anonymisation
+  http://www.cc.gatech.edu/computing/Telecomm/cryptopan/
+
+- Read/write zlib compressed flow logs
+
+- Variable-length integer encoding for numeric fields
+- Magic start bit pattern for records + checksum on record header,
+  so we can resynch on read errors
+- separate inbound and outbound tags, or just allow multiple (within reason)
+

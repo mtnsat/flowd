@@ -1,0 +1,80 @@
+#!/bin/bash
+#
+# Init file for flowd NetFlow Collector daemon
+#
+# chkconfig: 2345 95 05
+# description: flowd NetFlow Collector daemon
+#
+# processname: flowd
+# config: /etc/flowd.conf
+# pidfile: /var/run/flowd.pid
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+# pull in sysconfig settings
+[ -f /etc/sysconfig/flowd ] && . /etc/sysconfig/flowd
+
+RETVAL=0
+prog="flowd"
+
+[ -f /usr/sbin/flowd ] || exit 0
+[ -f /etc/flowd.conf ] || exit 0
+
+RETVAL=0
+
+start() {
+        echo -n $"Starting $prog: "
+        daemon flowd
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/flowd
+	return $RETVAL
+}
+
+
+stop() {
+        echo -n $"Stopping $prog: "
+        killproc flowd
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/flowd
+	return $RETVAL
+}
+
+restart() {
+	stop
+	start
+}
+
+reload() {
+	kill -HUP `cat /var/run/flowd.pid`
+}
+
+# See how we were called.
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  status)
+	status flowd
+	;;
+  restart)
+	restart
+	;;
+  reload)
+	reload
+	;;
+  condrestart)
+	[ -f /var/lock/subsys/flowd ] && restart || :
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|status|restart|reload|condrestart}"
+	exit 1
+esac
+
+exit $?
+

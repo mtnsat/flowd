@@ -1,0 +1,39 @@
+These are the platforms that flowd is tested on, along with any relevant notes.
+
+Platform		Status		Testing		Notes
+----------------------------------------------------------------------
+Debian (unstable)	OK		some		[1]
+Fedora Core 2		OK		well-tested	[1]
+OpenBSD 3.5+		OK		well-tested
+Redhat 9		OK		tested		[1] [2]
+Redhat 7.3		OK		in production	[1] [2] [4]
+Solaris 9		OK		tested		[1] [3]
+FreeBSD			Reportedly OK			probably [1]
+
+Notes:
+------
+
+[1] Most operating systems don't set up /var/empty/dev/log to capture log
+messages from chrooted processes like OpenBSD does. This causes log messages 
+from the unprivileged flowd instance to be lost. For Redhat-derived
+distributions, you can modify the syslog options line in /etc/sysconfig/syslog
+to add a listener. E.g.:
+
+SYSLOGD_OPTIONS="-m 0 -a /var/empty/dev/log"
+
+[2] Python-2.3 or greater is required and this platform lacks it by default,
+so the Python API is unavailable, unless you have manually installed an
+appropriate Python version.
+
+[3] Solaris includes Berkeley yacc by default, but you will need to add 
+/usr/ccs/bin to your $PATH. E.g.
+
+PATH=$PATH:/usr/ccs/bin ./configure [...]
+
+[4] The RPM installation on RedHat 7.3 needs a little manual hand-holding, 
+because useradd and groupadd won't create users or groups with leading 
+underscores in their names. You will need to create the _flowd user and group
+manually.
+
+$Id: PLATFORMS,v 1.6 2004/11/08 23:23:58 djm Exp $
+
