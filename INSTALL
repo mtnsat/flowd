@@ -1,0 +1,49 @@
+flowd is tested on OpenBSD, Linux and Solaris. It may work on other platforms, 
+but may need some adjusting. Please read PLATFORMS for comments specific to 
+your environment.
+
+To build flowd, you will need Berkeley yacc. Right now, GNU bison's doesn't 
+work for flowd (patches welcome). Berkeley yacc is installed by default on 
+BSD based systems and is available on most Linux systems in a package called 
+"byacc".
+
+If you are on SuSE, Redhat, or relative Linux systems, you should consider
+using the RPM spec files to build packages of flowd on your system. The
+file "flowd.spec" is for Redhat-like systems and "flowd.spec.suse" is for 
+SuSE Linux.
+
+To build flowd, follow the familiar incantation:
+
+./configure [options]
+make
+make install
+
+You will need to create a user _flowd with a home directory of /var/empty
+for privilege separation. The following commands should work for most 
+platforms (but may not be optimal on everywhere):
+
+mkdir /var/empty
+groupadd _flowd
+useradd -g _flowd -c "flowd privsep" -d /var/empty _flowd
+
+The Perl interface no longer requires extra modules. Build it after you have
+built flowd, using these commands:
+
+cd Flowd
+perl Makefile.PL
+make
+make install
+
+The Python module doesn't have any special dependencies beyond Python-2.3
+or a newer version. To install it, run the following commands after you
+have built flowd:
+
+python setup.py build 
+python setup.py install
+
+
+Please report any problems to me.
+
+Damien Miller <djm@mindrot.org>
+
+$Id: INSTALL,v 1.9 2005/12/26 21:37:20 djm Exp $

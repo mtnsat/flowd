@@ -1,0 +1,502 @@
+.\" $Id: flowd.conf.5.in,v 1.15 2007/10/24 01:04:10 djm Exp $
+.\"
+.\" Copyright (c) 2004,2005 Damien Miller <djm@mindrot.org>
+.\" Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
+.\" Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
+.\" Copyright (c) 2002 Daniel Hartmeier <dhartmei@openbsd.org>
+.\"
+.\" Permission to use, copy, modify, and distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.Dd July 30, 2004
+.Dt FLOWD.CONF 5
+.Os
+.Sh NAME
+.Nm flowd.conf
+.Nd NetFlow Collector daemon configuration file
+.Sh DESCRIPTION
+This is the configuration file for the
+.Xr flowd 8
+NetFlow collector daemon.
+All runtime configuration is performed through this file.
+By default,
+.Xr flowd 8
+will use the configuration located at
+.Pa @CONFPATH@/flowd.conf ,
+though an alterate file may be specified on the command line.
+.Pp
+The
+.Nm
+config file is divided into four main sections.
+.Bl -tag -width xxxx
+.It Cm Macros
+User-defined variables may be defined and used later, simplifying the
+configuration file.
+.It Cm Global configuration
+Global settings for the flowd daemon.
+.It Cm Storage field selection
+This selection specifies which fields from the flow packets are stored in
+the on-disk log file.
+By eliminating unnecessary fields, the log files may be made quite compact.
+.It Cm Filter
+The filter section allows filtering and tagging of flows using a matching
+language similar to a packet filter.
+.Sh MACROS
+Much like
+.Xr cpp 1
+or
+.Xr m4 1 ,
+macros can be defined that will later be expanded in context.
+Macro names must start with a letter, and may contain letters, digits
+and underscores.
+Macro names may not be reserved words (for example
+.Ar listen ,
+.Ar accept ,
+.Ar store ) .
+Macros are not expanded inside quotes.
+.Pp
+For example,
+.Bd -literal -offset indent
+internal_network="192.0.2.0/24"
+inbound_tag="0x100"
+outbound_tag="0x200"
+discard quick src $internal_network dst $internal_network
+accept tag $inbound_tag src dst $internal_network
+accept tag $outbound_tag src $internal_network dst any
+.Ed
+.Sh GLOBAL CONFIGURATION
+There are several settings that affect the operation of the
+.Xr flowd 8
+daemon globally.
+.Bl -tag -width xxxxxxxx
+.It Ar flow source
+Specify an address (or network) that
+.Xr flowd 8
+should accept flows from.
+The default is to accept flow packets from anywhere, but if one or
+more
+.Ar flow source
+options has been specified then
+.Xr flowd 8
+will disregard flow packets from other hosts.
+This is separate from the flow filtering language (mentioned below in the
+.Cm Filter
+section) - packets disregarded at this stage are not subject to any further
+processing.
+.Pp
+For example,
+.Bd -literal -offset indent
+flow source 127.0.0.1
+flow source 192.168.0.0/16
+flow source [4000:1::]/32
+.Ed
+.Pp
+This option is optional, if it is not specified then
+.Xr flowd 8
+will accept flow records from any address.
+The use of this option is strongly recommended when flow export protocols
+are used that require the collector to retain state information (e.g.
+NetFlow v.9 flow templates) in order to avoid flooding attacks.
+.It Ar join group
+Specify multicast groups to join.
+This allows
+.Xr flowd 8
+to receive multicast NetFlow datagrams.
+Both IPv6 and IPv6 groups are supported, IPv6 groups may specify an 
+interface scope.
+.Pp
+For example,
+.Bd -literal -offset indent
+join group 224.0.1.20
+join group ff02::114%em0
+join group ff05::114
+.Ed
+.It Ar listen on
+Specifies an address and port on which
+.Xr flowd 8
+should listen.
+IPv6 addresses must be surrounded by square brackets to distinguish them from
+the port number.
+This option may be specified more than once to listen on mutiple addresses
+and ports.
+.Pp
+For example,
+.Bd -literal -offset indent
+listen on 0.0.0.0:12345
+listen on [::]:12345
+.Ed
+.Pp
+This option accepts the modifier
+.Pa bufsize
+to allow the specification (in bytes) of the receive buffer for this socket.
+If not specified,
+.Nm
+will attempt to set a large buffer size automatically.
+.Pp
+For example,
+.Bd -literal -offset indent
+listen on 0.0.0.0:12345 bufsize 65536
+.Ed
+.Pp
+The
+.Cm listen on
+directive is mandatory. There is no default value.
+.It Ar logfile
+Specifies the file in which the received flow records are stored.
+The full path to the file must be specified in quotes.
+.Pp
+For example,
+.Bd -literal -offset indent
+logfile "/var/log/flowd.bin"
+.Ed
+.Pp
+There is no default value for this option and it it mandatory 
+to specify at least one of the
+.Cm logfile
+and
+.Cm logsock
+options.
+.It Ar logsock
+Specifies a path to an AF_UNIX datagram socket that will be relayed flows
+in realtime as they are received by flowd.
+Please note that this option is experimental.
+.Pp
+For example,
+.Bd -literal -offset indent
+logsock "/var/log/flowd.sock"
+.Ed
+.Pp
+This option accepts the modifier
+.Pa bufsize
+to allow the specification (in bytes) of the send buffer for this socket.
+If not specified,
+.Nm
+will use the system's default buffer size.
+.Pp
+For example,
+.Bd -literal -offset indent
+logsock "/var/log/flowd.sock" bufsize 65536
+.Ed
+.Pp
+There is no default value for
+.Cm logfile
+and it is mandatory 
+to specify at least one of the
+.Cm logfile
+and
+.Cm logsock
+options.
+.It Ar pidfile
+Specify a file in which
+.Xr flowd 8
+will store its process id once it has started up.
+For example,
+.Bd -literal -offset indent
+pidfile "/var/run/flowd.pid"
+.Ed
+.Pp
+The default is to create a PID file in
+.Pa @PIDPATH@/flowd.pid
+.El
+.Sh STORAGE FIELD SELECTION
+After filtering,
+.Xr flowd 8
+stores the flows that it receives in a flexible binary format, which permits
+the selection of which fields will be stored on disk.
+This enables the flow logs to be made very compact, by selecting only the
+fields of interest (this is particularly relevant for high-traffic collectors)
+.Pp
+The selection of which fields are recorded is made through the
+.Ar store
+configuration directive.
+Each
+.Ar store
+directive adds the specified field to the store log.
+For example:
+.Bd -literal -offset indent
+store SRCDST_ADDR
+store CRC32
+.Ed
+.Pp
+This would store just the source/destination addresses and a checksum per
+flow received.
+.Pp
+The field names supported in the
+.Ar store
+directive are:
+.Bl -tag -width xxxxxxxx
+.It Ar ALL
+Store all available fields.
+.It Ar TAG
+Stores the tag set by the flow filter.
+This field must be present for the tags to be recorded.
+.It Ar RECV_TIME
+Stores the time that the flow was received by
+.Xr flowd 8 .
+.It Ar PROTO_FLAGS_TOS
+Store the protocol, TCP flags and type-of-service (ToS) fields from the
+NetFlow packet.
+.Pp
+Like several other storage fields,
+.Ar PROTO_FLAGS_TOS
+actually contains several small NetFlow fields together for convenience.
+.It Ar AGENT_ADDR
+Store the address of the agent that sent the flow to the collector.
+.It Ar SRC_ADDR
+Store the source address from the NetFlow packet.
+.It Ar DST_ADDR
+Store the destination address from the NetFlow packet.
+.It Ar GATEWAY_ADDR
+Store the gateway address from the NetFlow packet.
+.It Ar SRCDST_PORT
+Store the source and destination ports from the NetFlow packet.
+.It Ar PACKETS_OCTETS
+Store the packet and octet counters from the NetFlow packet.
+.It Ar IF_INDICES
+Store the in and out interface indices from the NetFlow packet.
+.It Ar AGENT_INFO
+Store several fields from the NetFlow packet's header, including the
+agent uptime and "wall clock" time and the version of NetFlow in use.
+.It Ar AS_INFO
+Store the source and destination network Autonomous System (AS) numbers and
+network prefix lengths from the NetFlow packet.
+.It Ar FLOW_ENGINE_INFO
+Store the flow engine type and ID fields from the NetFlow packet.
+.It Ar CRC32
+Store a per-flow checksum along with each flow record to detect corruption
+of the flow log file.
+This checksum is automatically checked by
+.Xr flowd-reader 8 .
+Its use is highly recommended.
+.El
+Regardless of the options specified by the
+.Ar store
+directive,
+.Xr flowd 8
+will always store the time that the flow was received and an integer "tag"
+that may be set by the filter system (see below).
+.Sh FILTER
+.Xr flowd 8
+has the ability to
+.Ar accept
+and
+.Ar discard
+flow records
+based on the address of the agent that sent them or several parameters in the
+flow itself.
+.Pp
+Flows that are accepted may also be "tagged" with a 32-bit unsigned integer.
+This is intended to allow basic classification of flows.
+For example, this may be used to tag traffic that remains internal to the
+local network so that it may be treated specially by a traffic accounting
+system.
+.Pp
+For each flow received and processed by the filter, the filter rules are
+evaluated in sequential order, from first to last.
+The last matching
+.Ar accept
+or
+.Ar discard
+rule decides what action is taken.
+.Pp
+The following actions can be used in the filter:
+.Bl -tag -width xxxxxxxx
+.It Ar discard
+The flow record is ignored and is not written to disk.
+.It Ar accept
+The flow record is recorded to disk.
+.El
+.Sh PARAMETERS
+The rule parameters specify the NetFlow records to which a rule applies.
+Most parameters are optional.
+If a parameter is specified, the rule only applies to packets with
+matching attributes.
+The matching sense of some clauses in a filter rule may be negated by placing a
+.Cm !\&
+operator between a filter keyword and its parameter.
+.Bl -tag -width xxxxxxxx
+.It Ar tag <number>
+Tag flows matched by this rule with the
+.Ar number .
+This option only makes sense for
+.Ar accept
+rules.
+.It Ar quick
+If an flow record matches a rule which has the
+.Ar quick
+option set, this rule is considered the last matching rule, and evaluation
+of subsequent rules is skipped.
+.It Ar agent Xo
+.Oo !\& Oc
+.Ar <address>/<len>
+.Xc
+This rule applies to incoming flow packets that are received from an agent
+with an address in the specified network range.
+NB. this applies to the device sending the NetFlow packet, not the addresses
+within the packet itself.
+.It Xo
+.Oo Ar !\& Oc Ar <inet|inet6>
+.Xc
+This rule applies to flows whose source or destination address family matches
+that specified.
+.It Ar in_ifndx Xo
+.Oo Ar !\& Oc
+.Ar <index>
+.Xc
+Match traffic whose input interface number matches
+.Ar index .
+.It Ar out_ifndx Xo
+.Oo Ar !\& Oc
+.Ar <index>
+.Xc
+Match traffic whose output interface number matches
+.Ar index .
+.It Ar src Xo
+.Oo !\& Oc
+.Ar <address>/<len> Oo port Oo !\& Oc <port> Oc
+.Xc
+This rule applies only to flows whose source address (as recorded in the
+NetFlow packet) is in the specified address range.
+.Pp
+If the
+.Ar port
+option is specified, then the rule is further restricted to flows whose
+source port number matches that specified.
+NB. the port checks are only valid for rules matching TCP or UDP flows.
+.It Ar dst Xo
+.Oo !\& Oc
+.Ar <address>/<len> Oo port Oo !\& Oc <port> Oc
+.Xc
+This rule applies only to flows whose destination address (as recorded in the
+NetFlow packet) is in the specified address range.
+.Pp
+If the
+.Ar port
+option is specified, then the rule is further restricted to flows whose
+destination port number matches that specified.
+NB. the port checks are only valid for rules matching TCP or UDP flows.
+.It Ar proto Xo
+.Oo !\& Oc
+.Ar <protocol>
+.Xc
+This rule only applies for flows whose protocol matches that specified.
+Protocols may be specified by name (tcp, udp, icmp, etc) or by number.
+.It Ar tos Xo
+.Oo !\& Oc
+.Ar <tos>
+.Xc
+This rule only applies for flows whose type-of-service (ToS) matches that
+specified.
+The
+.It Ar tos Xo
+.Oo !\& Oc
+.Ar <tos>
+.Xc
+may be specified as a decimal or hexidecimal number.
+.It Ar tcp_flags Xo
+.Op Ar mask <mask>
+.Oo !\& Oc
+.Ar equals <flags>
+.Xc
+This rule only applies for TCP flows where the accumulated TCP flags seen over
+the lifetime of the flow match
+the
+.Ar flags
+specified.
+If a
+.Ar mask
+is specified, the flags checked are the logical AND of the accumulated TCP flags
+and the mask.
+The
+.Ar mask
+and
+.Ar flags
+may be specified as decimal or hexidecimal numbers.
+NB. This clause may only be applied to rules matching TCP flows.
+.It Ar days Ar <day> | <day>-<day> | Xo
+.Sm off
+.Ar <day>
+.Oo ,\&<day> Oo ,\&... Oc Oc
+.Sm on
+.Xc
+This rule only applies for flows received on the specified days of the week.
+Days may be selected as a comma separated list of names (e.g. 
+.Ar monday,tuesday,wednesday )
+or as a hyphen separated range.
+Abbreviations are allowed, e.g.
+.Ar mon-fri .
+.It Ar after Xo
+.Sm off
+.Ar <HH:MM
+.Oo :SS Oc >
+.Sm on
+.Xc
+This rule only applies for flows received after the specified time of day.
+.It Ar before Xo
+.Sm off
+.Ar <HH:MM
+.Oo :SS Oc >
+.Sm on
+.Xc
+This rule only applies for flows received before the specified time of day.
+.It Ar after date Xo
+.Sm off
+.Ar <YYYY
+.Oo MMDD 
+.Oo HHMM
+.Oo SS Oc Oc Oc >
+.Sm on
+.Xc
+This rule only applies for flows received after the specified date / time.
+.It Ar before date Xo
+.Sm off
+.Ar <YYYY
+.Oo MMDD 
+.Oo HHMM
+.Oo SS Oc Oc Oc >
+.Sm on
+.Xc
+This rule only applies for flows received before the specified date / time.
+.El
+.Pp
+This is an example of the filtering language in action:
+.Bd -literal -offset indent
+# Immediately discard all flowd from unknown agents
+discard quick agent ! 192.2.0.254
+# Perform classification of local traffic
+accept tag 1 src 192.0.2.0/24 dst 192.0.2.0/24
+# Classification of inbound traffic
+accept tag 2 dst 192.0.2.0/24
+# Classification of outbound traffic
+accept tag 3 src 192.0.2.0/24
+# Classification of web traffic
+accept tag 0x100 dst any port 80 proto tcp
+accept tag 0x100 src any port 80 proto tcp
+# Ignore all but one hosts' traffic to a specific port
+discard src ! 192.2.0.33 dst any port 12345 proto tcp
+# Ignore unestablished TCP flows (ACK = 0x10, SYN = 0x02)
+discard proto tcp tcp_flags mask 0x12 !equals 0x12
+# Tag flows received during business hours
+accept days Monday-Friday after 08:30:00 before 17:30:00
+# Ignore flows sent on weekends
+discard days Sat,Sun
+# Ignore flows sent outside a certain date/time range
+discard after date 20051123 before date 20051124084459
+# Ignore flows coming in interface 10
+discard in_ifndx 10
+.Ed
+.Pp
+.Sh AUTHORS
+Damien Miller <djm@mindrot.org>
+.Sh SEE ALSO
+.Xr flowd 8
+.Xr flowd-reader 8

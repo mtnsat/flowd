@@ -1,0 +1,414 @@
+20080725
+ - (djm) byte swap interface indices before testing them in filters
+ - (djm) Fixed swapped last/first_switched times in netflow v.9 code
+   patch from weinhold AT berbee.com
+ - (djm) Released flowd-0.9.1
+
+20080422
+ - (djm) Support flow-tools CSV output format in flowd-reader. Patch from
+   weinhold AT berbee.com
+ - (djm) Use proper API for logging debug information; Spotted by
+   JSaxe AT briworks.com
+
+20071024
+ - (djm) Support explicit specification of "listen on" and "logsock"
+   socket buffer sizes. Patch from kempfj2 AT cs.rpi.edu
+
+20071010
+ - (djm) Make local socket-only logging work, and fix spurious warnings
+   from socket logging. Patch from kempfj2 AT cs.rpi.edu
+ - (djm) Unbreak flowinsert.pl
+
+20070723
+ - (djm) Fix NetFlow v.9 flowset template parsing on LP!32 platforms.
+   Report and fix from zhangjinxue AT cernet.edu.cn
+
+20070510
+ - (djm) Add support for filtering input/output interface index. Requested
+   by Ralf Kleineisel, debugging assistance from Matthew Smart
+
+20061020
+ - (djm) Rename CRC32 functions to avoid collisions with zlib;
+   patch from Sergey Vasilenko <stalker@telemost.ru>
+
+20051227
+ - (djm) Add RPM spec and init files for SuSE Linux from alshu AT tut.by
+ - (djm) Released flowd-0.9
+
+20051220
+ - (djm) Fix byte swapping of src/dst AS and interface indices, spotted 
+   and fix tested by Gijs Molenaar
+
+20051208
+ - (djm) Implement absolute time (before & after) filters, requested by
+   alshu AT tut.by
+
+20051207
+ - (djm) Demote input buffer full warning to a debug and reduce the length
+   of the input queue (now that we have an output queue)
+ - (djm) Another hex that got away
+
+20051206
+ - (djm) Rename some filter members to make absolute time filtering easier
+
+20051204
+ - (djm) Add an output queue, so we don't do tiny little filesystem writes for
+   each flow we receive
+ - (djm) Sync tree.h and queue.h with OpenBSD
+
+20051117
+ - (djm) Prefix all hex integers in logs with "0x"
+ - (djm) More source_id debugging everywhere
+
+20051111
+ - (djm) Support devices that send multiple templates in a single template
+   packet section. Thanks to Gijs Molenaar for packet dumps that demonstrated
+   this
+ - (djm) Turn off Netflow v.9 debugging
+
+20051013
+ - (djm) Fix bug that broke filtering on address family in flows, spotted by
+   Gijs Molenaar
+ - (djm) Rename common.h -> flowd-common.h, always install it and
+   flowd-config.h. Should help platforms without intXX_t etc.
+
+20051001
+ - (djm) Add FlowLog_from_file method to Python module
+ - (djm) Increase UDP socket receive buffer size, shrink socket send buffer size
+   to cope better with bursts of flows
+ - (djm) Allow reading from standard input in tools/stats.py
+ - (djm) Better error message on corrupt flows
+ - (djm) Change flowd-reader to *overwrite* existing log files, not *append* to
+   them
+
+20050928
+ - (djm) Add a basic input queue to flowd, to improve its behaviour when it
+   receives sudden bursts of packets.
+
+20050918
+ - (djm) Fix error reporting on logsock send failures
+ - (djm) Fix another typo in tools/stats.py, spotted by alshu@tut.by
+ - (djm) Sync usage for flowd-reader
+ - (djm) -Wall cleanup flowd_python.c
+ - (djm) Tidy stats.py, and remove hard dependency on curses module
+
+20050918
+ - (djm) Fix typo in tools/stats.py, spotted by alshu@tut.by
+ - (djm) Mention softflowd and pfflowd in README, suggested by alshu@tut.by
+
+20050913
+ - (djm) Mention creation of _flowd user in INSTALL, spotted by alshu@tut.by
+
+20050826
+ - (djm) Add interval_time() and iso_time() functions to Python module
+ - (djm) Port and tidy stats script
+ - (djm) Add a "head" mode to flowd-reader
+
+20050826
+ - (djm) Add Flow.has_field() to Python API
+
+20050825
+ - (djm) Make it compile on Solaris 9 (Perl module is still busted because 
+   of compiler misguessing stupidity)
+
+20050824
+ - (djm) Add support for relaying serialised flows to a local Unix domain
+   datagram socket in realtime. This option ("logsock" in flowd.conf) is
+   considered experimental. A sample Python client exists in 
+   tools/sockclient.py that receives and prints the flows.
+
+20050822
+ - (djm) Improve the Python API some more:
+   - Prefer PyLong as type for various fields
+   - Maintain all addresses as PyObjects rather than char*, so it is 
+     possible to write to them
+   - Initialise missing addresses, octet and packet counters to Py_None
+   - Fix lots of bugs
+ - (djm) Macroise much of the NetFlow v.9 parsing code and fix length
+   mismatches in the process
+ - (djm) Check for, and refuse to append to legacy logfiles
+ - (djm) Don't lookup username when running in INSECURE mode
+ 
+20050822
+ - (djm) Figure out Python structmember.h types for struct store_flow_complete
+   at autoconf time and stuff them into their own header
+ - (djm) Add (src|dst|agent|gateway)_addr_af to Python API
+
+20050821
+ - (djm) Major rewrite of storage code:
+   - Introduce a new storage format (version 3), which should be much faster
+     to read from disk and easier and more graceful to extend
+   - Add FILE* oriented API
+   - Add some new fields: receive time microseconds, netflow v.9 source_id
+   - Extend the widths of several fields: if_ndx_(in|out), (src|dst)_as, 
+     engine_(type|id)
+   - Add functions for reading and writing legacy logs
+ - (djm) Major rewrite of Python API
+   - Implements all the functions in all hybrid API using 100% C code
+   - Use Python structmember API and store.c for major speed improvement
+   - Adds an iterator object to read all flows from a flow log
+ - (djm) Adjust Perl API to cope with new store format
+ - (djm) Add ability for flowd-reader to read and convert legacy log files
+ - (djm) Update copyright years
+
+20050707
+ - (djm) Fix pidfile path in manpage
+
+20050619
+ - (djm) README typo, spotted by cruel AT texnika.com.ua
+
+200500601
+ - (djm) Add a simple Python summarisation and charting script (tools/stats.py)
+
+20050514
+ - (djm) Fix spurious error message
+ - (djm) Improve day filters, allowing lists and ranges of days
+ - (djm) Release flowd-0.8.5
+
+20050428
+ - (djm) Add day and time-of-day filters
+ - (djm) Add option to disable privdropping, allows execution as non root for
+   future regression tests
+
+20050420
+ - (djm) Fix broken src port filter, spotted by kolya AT centel.ru
+ - (djm) Fix compilation with FILTER_DEBUG; spotted by kolya AT centel.ru
+
+20050404
+ - (djm) Error on inconsistent addr/masklen in config file. Spotted by 
+ msaufy AT yahoo.co.uk
+
+20050313
+ - (djm) Move Perl library from Flowd to Flowd-perl because Mac OS X's 
+   filesystem is (idiotically) case independant, resulting in breakage when 
+   trying to build the 'flowd' binary; reported by Jakob Schlyter
+- (djm) Extend Python API to support writing of flows. Written between Melbourne
+  and Tokyo
+- (djm) Add support for filtering on TCP flags and flow address family. Written
+  over Siberia enroute to Paris
+
+20050204
+ - (djm) Support writing flow records to pipes and sockets in store.c
+ - (djm) Add support to flowd-reader to allow reading from stdin and writing 
+   to stdout
+
+20050114
+ - (djm) Release 0.8
+
+20050110
+ - (djm) Implement multicast group join support
+
+20041202
+ - (djm) Reuse existing config parsing code for flowd-reader's new filtering
+   ability, rather than maintaining a whole other yacc parser
+ - (djm) Improve flowd-reader manpage
+
+20041201
+ - (djm) Extend flowd-reader to support writing of binary flows and 
+    basic filtering
+
+20041109
+ - (djm) Lots of spelling, grammar and text fixes from Tamas Tevesz.
+
+20041107
+ - (djm) Crank version numbers for development version
+
+20041103
+ - (djm) Rejig Makefile and headers to install C library and headers
+ - (djm) Allow [addr] syntax in flowd.conf rules, like we do for listen on
+ - (djm) Don't generate critical Perl and Python build files from autoconf
+   makes packaging easier, at the cost of a little more release-time editing
+ - (djm) Allow building of Perl and Python modules without running configure
+   first - useful if building against a system copy of libflowd
+ - (djm) Don't clobber perl or python modules in "make distclean"
+ - (djm) Build fixes for Linux
+ - (djm) Add devel subpackage to rpm spec
+ - (djm) Release flowd-0.7
+
+20041102
+ - (djm) Crank versions to prepare for release
+
+20041101
+ - (djm) Properly clean up Perl module build spoor in "make realclean"
+
+20041030
+ - (djm) Fix a few bugs in the store code: calculate lengths correctly and 
+   error when we encounter unsupported fields
+ - (djm) Implement most of the Python API in native code, using the C API
+ - (djm) Kill whitespace at EOL
+ - (djm) More length checking in deserialise function
+ - (djm) Implement most of the Perl API in native code, using the C API
+ - (djm) Adjust docs and tools for new Perl/Python API
+ - (djm) Package Perl module stuff in RPM spec
+
+20041030
+ - (djm) Rework flow reading C API to be more friendly to wrapping into Perl
+   and Python: add functions to convert a serialised flow record into a
+   struct store_flow_complete.
+ - (djm) Skip CRC32 calculations when aren't reading/writing a CRC32, saves a
+   little time.
+ - (djm) Add a serialisation function to match the new deserialisation function
+ - (djm) More C API tidying: make the functions thread-safe by eliminating 
+   static buffers. Error messages are now formatted into caller-supplied buffers
+ - (djm) Make store_ functions return a meaningful error code, in addition to 
+   an error message. Useful for Perl/Python wrapper functions.
+
+20041011
+ - (djm) Kill whitespace at EOL, improve nf9 debugging
+ - (djm) Add option to keep flowd in foreground without verbose debugging; 
+   patch from lars AT unet.net.ph
+ - (djm) Document new -g and existing -D options
+
+20040929
+ - (djm) Don't refuse to write flows lacking gateway addr
+
+20040927
+ - (djm) In flow formattinhg function (C, Perl and Python), surround all
+   addresses with square brackets so ports may be seen in IPv6 addresses.
+   Spotted by Chris Gascoigne
+
+20040924
+ - (djm) Tidy README and mention v.7 and v.9 support
+ - (djm) Recommend use of "flow source" in flowd.conf for NetFlow 9
+ - (djm) Add tree code for recent changes
+ - (djm) Store agent address for v.9 flows
+ - (djm) Add some tools to the tools/ directory
+ - (djm) Add tools/ directory to RPM
+ - (djm) Make RPM tools subpackage
+ - (djm) Release flowd-0.6
+
+20040921
+ - (djm) Implement NetFlow v.9 support. Some more work to do yet, but it is 
+   basically functional
+ - (djm) Bugfix nf v.9: we never updated the peer record
+ - (djm) Tidy nv v.9 code: factor out data flowset to store flow conversion and
+   don't process any flows unless the entire flowset is valid.
+
+20040920
+ - (djm) Add new "flow source" directive, to specify hosts that we are willing
+   to receive flows from
+ - (djm) Split peer tracking code out into separate file
+
+20040916
+ - (djm) Fix transposed flow limits for v.1 vs v.5 flows; found by 
+   jon AT exalia.com
+ - (djm) Generate version number from autoconf, rather than hardcoding old (!)
+   value in Makefile; found by jon AT exalia.com
+ - (djm) Fix permissions on generated setup.py
+ - (djm) Release flowd-0.5
+ - (djm) Add packet dumping code (disabled by default)
+ - (djm) Add untested NetFlow v.7 parsing code
+ - (djm) Add peer tracking and stateholding code, will be needed to support 
+   NetFlow v.9 and IPFIX
+
+20040914
+ - (djm) Use a table-based parser in Flowd.pm, like the python code
+
+20040906
+ - (djm) Actually check for strlcpy and strlcat in configure
+
+20040908
+ - (djm) Fix parsing bug that could suppress errors for invalid addresses in
+   filter rules
+
+20040906
+ - (djm) Reformat README, upgrade from beta to production quality and mention
+   PLATFORMS file
+ - (djm) Mention FreeBSD and Redhat 7.3 in PLATFORMS file
+ - (djm) Skip CRC calculation in Perl and Python code when there is no CRC 
+   in the record. Speeds up processing of CRC-less files considerably
+ - (djm) Generate Flowd.pm, flowd.py and setup.py from template files, saving
+   me the necessity of editing each whenever the version changes
+
+20040823
+ - (djm) NetFlow v.5 allows 30 flows per packet, not 24
+ - (djm) Call tzset() so unpriv child gets log timestamps right
+ - (djm) Missing htons() in error path
+
+20040819
+ - (djm) Fixes to Flowd.pm for Redhat 7.3 (Perl 5.6.1):
+   - "use constant" syntax
+   - Pull PF_INET6 from Socket6, not Socket
+   - Compatible Math::BigInt code
+   - Remove leading '+' from Math::BigInts when printing
+   - Avoid Math::BigInt altogether for counters < 2^32
+ - (djm) Don't refuse to load configs without filter rules
+ - (djm) Support "store SRC_ADDR" and "store DST_ADDR" aliases
+ - (djm) Fix flowd.conf store example
+ - (djm) Crank versions to 0.4.1
+
+20040817
+ - (djm) Make sure we reinstate signal handers after invocation, fixes 
+         exit on 2nd reconfigure on Solaris
+ - (djm) Don't rewrite pidfile if its path hasn't changed - avoids race 
+         condition false-failures in "while [ 1 ] ; do kill ... ; done" 
+         stress test
+ - (djm) Improve PLATFORMS file a little
+ - (djm) Release flowd 0.4
+ - (djm) Unbreak spec file for Redhat 9
+
+20040816
+ - (djm) Pull in some portability fixes from portable OpenSSH
+ - (djm) Crank version
+ - (djm) Portability fixes for Redhat 9
+ - (djm) Make Python API optional in RPM spec as it is broken on Redhat 9
+ - (djm) Add some standard logging code from softflowd, that does stderr right
+         and is a little more portable
+ - (djm) Add PLATFORMS notes file
+ - (djm) Lots of portability goop to get flowd compiling of Solaris 9
+ - (djm) Reflect Solaris support in PLATFORMS and INSTALL
+ 
+20040813
+ - (djm) Bring python inteface up to the same level as the perl and C ones
+ - (djm) Print tcp_flags as two hex digits, in C API
+ - (djm) Improve the README, mention Python API
+ - (djm) Reorganise signal handers, add SIGUSR1 for reopen logfiles
+ - (djm) Document signals and tidy
+ - (djm) Portability and warning fixes
+ - (djm) Add python install script and mention it in INSTALL
+ - (djm) Enable reload method in initscript, now that it works
+ - (djm) Rework RPM spec to have perl and python modules in subpackages
+ - (djm) Release flowd 0.3
+
+20040812
+ - (djm) Parse and verify config in a subprocess, avoiding all memory leaks
+   and side effects.
+ - (djm) Activate runtime reconfigure
+ - (djm) Store address families for each address in flow
+ - (djm) Add start of a python interface to the flow log format
+
+20040810
+ - (djm) Add finish() method to perl API, to close flow log
+ - (djm) Fix filter format_rule for rules that match ports but not addrs
+ - (djm) Set IPV6_V6ONLY on AF_INET6 sockets - avoids stupid mapped address crap
+ - (djm) Don't leak fd on logfile reopen
+ - (djm) Move listener open function to privsep.c, in preparation for runtime 
+   reconfigure support
+ - (djm) Implement runtime reconfigure, currently disabled because of memory 
+   leaks in config parsing code
+
+20040804
+ - (djm) Don't clobber existing configuration file
+ - (djm) Rework the storage format a little, so we can be more compact when
+   storing a few fields - NB this is an incompatible format change
+ - (djm) Check log header when reopening log file to ensure we don't append
+   new-format records to an old-format log
+
+20040803
+ - (djm) Tidy flowd.conf to the point where it can be installed by default
+ - (djm) Tidy Flowd.pm and perl reader application a little
+ - (djm) Don't allow port in filter rules for !(tcp|udp)
+ - (djm) Support negated matching in filter language. E.g. agent ! x.x.x.x/y
+ - (djm) Document negated matching in flowd.conf manpage
+ - (djm) Install flowd.conf by default
+ - (djm) Track filter rule evaluations, matches and wins
+ - (djm) Install SIGINFO (and USR1) handler to display filter counters
+ - (djm) Simplify perl module and add a little POD 
+ - (djm) Create an RPM package (works on FC2 at least)
+ - (djm) Release flowd-0.2
+
+20040730
+ - (djm) Release flowd 0.1
+
+$Id: ChangeLog,v 1.175 2008/07/25 00:04:17 djm Exp $
+
