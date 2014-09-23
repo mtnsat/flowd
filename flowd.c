@@ -1434,7 +1434,6 @@ main(int argc, char **argv)
 			break;
 		case 'g':
 			conf.opts |= FLOWD_OPT_DONT_FORK;
-			loginit(PROGNAME, 1, 1);
 			break;
 		case 'h':
 			usage();
