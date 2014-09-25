@@ -60,7 +60,7 @@ loginit(const char *ident, int to_stderr, int debug_flag)
 	if (to_stderr)
 		logstderr = 1;
 	else
-		openlog(ident, LOG_PID, LOG_DAEMON);
+		openlog(ident, LOG_PID, LOG_LOCAL0);
 }
 
 /* Varargs vsyslog-like log interface */
